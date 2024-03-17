@@ -25,9 +25,9 @@ func main() {
 	router.Handle("/*", http.StripPrefix("/", http.FileServer(http.FS(FS))))
 	router.Get("/", handler.MakeHandler(handler.HandleHomeIndex))
 
-	port := os.Getenv("HTTP_LISTEN_ADDR")
-	slog.Info("application running", "port", port)
-	log.Fatal(http.ListenAndServe("127.0.0.1"+port, router))
+	addr := os.Getenv("HTTP_LISTEN_ADDR")
+	slog.Info("application running", "addr", addr)
+	log.Fatal(http.ListenAndServe(addr, router))
 }
 
 func initEverything() error {
