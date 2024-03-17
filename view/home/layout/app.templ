@@ -1,0 +1,23 @@
+package layout
+
+templ App(nav bool) {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="dark">
+		<head>
+			<title>Dreampicai</title>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link rel="stylesheet" href="/public/styles.css"/>
+			<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.11/dist/htmx.min.js" defer></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+		</head>
+		<body class="antialiased">
+			if nav {
+				navigation
+			}
+			{ children... }
+		</body>
+	</html>
+}
+ 
