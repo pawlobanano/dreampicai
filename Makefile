@@ -7,7 +7,6 @@ install:
 	@go mod vendor
 	@go mod tidy
 	@go mod download
-	@npm install -D tailwindcss
 	@npm install -D daisyui@latest
 
 css:
@@ -17,7 +16,6 @@ templ:
 	@templ generate --watch --proxy=http://localhost:3000
 
 build:
-	npx tailwindcss -i view/css/app.css -o public/styles.css
 	@templ generate view
 	@go build -tags dev -o bin/dreampicai main.go 
 

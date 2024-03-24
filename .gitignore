@@ -1,5 +1,7 @@
 .DS_Store
-node_modules/
-vendor/
-bin/
-*_templ.go*
+*_templ.go
+
+bin
+node_modules
+tmp
+vendor
