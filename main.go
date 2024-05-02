@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"dreampicai/handler"
+	"dreampicai/pkg/sb"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -26,6 +27,7 @@ func main() {
 	router.Handle("/*", http.StripPrefix("/", http.FileServer(http.FS(FS))))
 	router.Get("/", handler.Make(handler.HandleHomeIndex))
 	router.Get("/login", handler.Make(handler.HandleLoginIndex))
+	router.Post("/login", handler.Make(handler.HandleLoginCreate))
 
 	addr := os.Getenv("HTTP_LISTEN_ADDR")
 	slog.Info("application running", "addr", addr)
@@ -33,5 +35,9 @@ func main() {
 }
 
 func initEverything() error {
-	return godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		return err
+	}
+
+	return sb.Init()
 }

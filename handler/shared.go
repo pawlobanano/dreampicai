@@ -4,9 +4,15 @@ import (
 	"dreampicai/types"
 	"log/slog"
 	"net/http"
+
+	"github.com/a-h/templ"
 )
 
-func GetAuthenticatedUser(r *http.Request) types.AuthenticatedUser {
+func render(r *http.Request, w http.ResponseWriter, component templ.Component) error {
+	return component.Render(r.Context(), w)
+}
+
+func getAuthenticatedUser(r *http.Request) types.AuthenticatedUser {
 	user, ok := r.Context().Value(types.UserContextKey).(types.AuthenticatedUser)
 	if !ok {
 		return types.AuthenticatedUser{}
