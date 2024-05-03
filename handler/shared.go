@@ -8,7 +8,7 @@ import (
 	"github.com/a-h/templ"
 )
 
-func render(r *http.Request, w http.ResponseWriter, component templ.Component) error {
+func render(w http.ResponseWriter, r *http.Request, component templ.Component) error {
 	return component.Render(r.Context(), w)
 }
 

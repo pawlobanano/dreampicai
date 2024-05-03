@@ -27,6 +27,8 @@ func main() {
 	router.Handle("/*", http.StripPrefix("/", http.FileServer(http.FS(FS))))
 	router.Get("/", handler.Make(handler.HandleHomeIndex))
 	router.Get("/login", handler.Make(handler.HandleLoginIndex))
+	router.Get("/signup", handler.Make(handler.HandleSignupIndex))
+	router.Post("/signup", handler.Make(handler.HandleSignupCreate))
 	router.Post("/login", handler.Make(handler.HandleLoginCreate))
 
 	addr := os.Getenv("HTTP_LISTEN_ADDR")
