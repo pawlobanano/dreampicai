@@ -1,0 +1,10 @@
+package settings
+
+import "dreampicai/view/home/layout"
+import "dreampicai/types"
+
+templ Index(user types.AuthenticatedUser) {
+	@layout.App(true) {
+		<div>hello { user.Email }</div>
+	}
+}

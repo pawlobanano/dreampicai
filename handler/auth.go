@@ -18,6 +18,36 @@ func HandleSignupIndex(w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.Signup())
 }
 
+func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
+	credentials := supabase.UserCredentials{
+		Email:    r.FormValue("email"),
+		Password: r.FormValue("password"),
+	}
+	resp, err := sb.Client.Auth.SignIn(r.Context(), credentials)
+	if err != nil {
+		slog.Error("login error", "err", err)
+		return render(w, r, auth.LoginForm(credentials, auth.LoginErrors{
+			InvalidCredentials: "The credentials you have entered are invalid",
+		}))
+	}
+	setAuthCookie(w, resp.AccessToken)
+	return hxRedirect(w, r, "/")
+}
+
+func HandleLogoutCreate(w http.ResponseWriter, r *http.Request) error {
+	cookie := http.Cookie{
+		Name:     "at",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Secure:   true,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	return nil
+}
+
 func HandleSignupCreate(w http.ResponseWriter, r *http.Request) error {
 	params := auth.SignupParams{
 		Email:           r.FormValue("email"),
@@ -45,26 +75,23 @@ func HandleSignupCreate(w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.SignupSuccess(user.Email))
 }
 
-func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
-	credentials := supabase.UserCredentials{
-		Email:    r.FormValue("email"),
-		Password: r.FormValue("password"),
+func HandleAuthCallback(w http.ResponseWriter, r *http.Request) error {
+	accessToken := r.URL.Query().Get("access_token")
+	if len(accessToken) == 0 {
+		render(w, r, auth.CallbackScript())
 	}
-	resp, err := sb.Client.Auth.SignIn(r.Context(), credentials)
-	if err != nil {
-		slog.Error("login error", "err", err)
-		return render(w, r, auth.LoginForm(credentials, auth.LoginErrors{
-			InvalidCredentials: "The credentials you have entered are invalid",
-		}))
-	}
+	setAuthCookie(w, accessToken)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	return nil
+}
+
+func setAuthCookie(w http.ResponseWriter, accessToken string) {
 	cookie := &http.Cookie{
 		Name:     "at",
-		Value:    resp.AccessToken,
+		Value:    accessToken,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
 	}
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-	return nil
 }
