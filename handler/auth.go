@@ -48,6 +48,18 @@ func HandleLogoutCreate(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func HandleLoginWithGoogle(w http.ResponseWriter, r *http.Request) error {
+	resp, err := sb.Client.Auth.SignInWithProvider(supabase.ProviderSignInOptions{
+		Provider:   "google",
+		RedirectTo: "http://localhost:3000/auth/callback",
+	})
+	if err != nil {
+		return err
+	}
+	http.Redirect(w, r, resp.URL, http.StatusSeeOther)
+	return nil
+}
+
 func HandleSignupCreate(w http.ResponseWriter, r *http.Request) error {
 	params := auth.SignupParams{
 		Email:           r.FormValue("email"),
