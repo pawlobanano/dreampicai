@@ -16,7 +16,8 @@ func WithAuth(next http.Handler) http.Handler {
 		}
 		user := getAuthenticatedUser(r)
 		if !user.IsLoggedIn {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			path := r.URL.Path
+			http.Redirect(w, r, "/login?to="+path, http.StatusSeeOther)
 			return
 		}
 		next.ServeHTTP(w, r)
