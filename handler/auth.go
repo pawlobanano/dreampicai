@@ -10,6 +10,8 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
+const cookieName = "at"
+
 func HandleLoginIndex(w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.Login())
 }
@@ -36,7 +38,7 @@ func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
 
 func HandleLogoutCreate(w http.ResponseWriter, r *http.Request) error {
 	cookie := http.Cookie{
-		Name:     "at",
+		Name:     cookieName,
 		Value:    "",
 		Path:     "/",
 		MaxAge:   -1,
@@ -99,7 +101,7 @@ func HandleAuthCallback(w http.ResponseWriter, r *http.Request) error {
 
 func setAuthCookie(w http.ResponseWriter, accessToken string) {
 	cookie := &http.Cookie{
-		Name:     "at",
+		Name:     cookieName,
 		Value:    accessToken,
 		Path:     "/",
 		HttpOnly: true,

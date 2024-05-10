@@ -16,6 +16,7 @@ func WithAuth(next http.Handler) http.Handler {
 		}
 		user := getAuthenticatedUser(r)
 		if !user.IsLoggedIn {
+			// TODO add redirect to previously requested path
 			path := r.URL.Path
 			http.Redirect(w, r, "/login?to="+path, http.StatusSeeOther)
 			return
@@ -31,7 +32,7 @@ func WithUser(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		cookie, err := r.Cookie("at")
+		cookie, err := r.Cookie(cookieName)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
