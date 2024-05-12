@@ -1,5 +1,9 @@
-run: build
-	@./bin/dreampicai
+build:
+	@templ generate view
+	@go build -tags dev -o bin/dreampicai main.go 
+
+css:
+	@tailwindcss -i view/css/app.css -o public/styles.css --watch 
 
 install:
 	@go install github.com/a-h/templ/cmd/templ@latest
@@ -9,27 +13,20 @@ install:
 	@go mod download
 	@npm install -D daisyui@latest
 
-css:
-	@tailwindcss -i view/css/app.css -o public/styles.css --watch 
+migratedown:
+	@go run cmd/migrate/main.go down
 
-templ:
-	@templ generate --watch --proxy=http://localhost:3000
-
-build:
-	@templ generate view
-	@go build -tags dev -o bin/dreampicai main.go 
-
-up:
+migrateup:
 	@go run cmd/migrate/main.go up
 
 reset:
 	@go run cmd/reset/main.go up
 
-down:
-	@go run cmd/migrate/main.go down
+run: build
+	@./bin/dreampicai
 
-migration:
-	@migrate create -ext sql -dir cmd/migrate/migrations $(filter-out $@,$(MAKECMDGOALS))
+templ:
+	@templ generate --watch --proxy=http://localhost:3000
 
 seed:
 	@go run cmd/seed/main.go

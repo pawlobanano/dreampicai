@@ -2,11 +2,11 @@ package main
 
 import (
 	"embed"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
 
+	"dreampicai/config"
 	"dreampicai/handler"
 	"dreampicai/pkg/sb"
 
@@ -17,9 +17,17 @@ import (
 //go:embed public
 var FS embed.FS
 
+var log = *slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 func main() {
+	config, err := config.LoadConfig(log)
+	if err != nil {
+		log.Error("Loading config failed.", err)
+		os.Exit(1)
+	}
+
 	if err := initEverything(); err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}
 
 	router := chi.NewMux()
@@ -39,9 +47,12 @@ func main() {
 		auth.Get("/settings", handler.Make(handler.HandleSettingsIndex))
 	})
 
-	addr := os.Getenv("HTTP_LISTEN_ADDR")
-	slog.Info("application running", "addr", addr)
-	log.Fatal(http.ListenAndServe(addr, router))
+	log.Info("application running", "addr", config.HttpListenAddr)
+	err = http.ListenAndServe(config.HttpListenAddr, router)
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(1)
+	}
 }
 
 func initEverything() error {
