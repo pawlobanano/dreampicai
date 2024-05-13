@@ -13,6 +13,9 @@ install:
 	@go mod download
 	@npm install -D daisyui@latest
 
+lint:
+	@golangci-lint run ./...
+
 migratedown:
 	@go run cmd/migrate/main.go down
 

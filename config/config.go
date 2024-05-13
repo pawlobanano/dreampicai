@@ -2,34 +2,54 @@ package config
 
 import (
 	"dreampicai/types"
+	"errors"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-// LoadEnvVars loads the configuration from the .env file and returns a Config and error.
-func LoadEnvVars(log types.Logger) (*types.Config, error) {
+// LoadEnvVars loads the configuration from the .env file and returns a Config and error if any.
+func LoadEnvVars() (types.Config, error) {
 	err := godotenv.Load()
 	if err != nil {
-		log.Error("Loading .env file", err)
-		return nil, err
+		return types.Config{}, err
 	}
 
-	checkEnvVar(log, "DB_HOST")
-	checkEnvVar(log, "DB_NAME")
-	checkEnvVar(log, "DB_PASSWORD")
-	checkEnvVar(log, "DB_PORT")
-	checkEnvVar(log, "DB_USER")
-	checkEnvVar(log, "HTTP_LISTEN_ADDR")
-	checkEnvVar(log, "SUPABASE_SECRET")
-	checkEnvVar(log, "SUPABASE_URL")
+	if err := checkEnvVar("DB_HOST"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("DB_NAME"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("DB_PASSWORD"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("DB_PORT"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("DB_USER"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("ENVIRONMENT"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("HTTP_LISTEN_ADDR"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("SUPABASE_SECRET"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("SUPABASE_URL"); err != nil {
+		return types.Config{}, err
+	}
 
-	config := &types.Config{
+	config := types.Config{
 		DbHost:         os.Getenv("DB_HOST"),
 		DbName:         os.Getenv("DB_NAME"),
 		DbPassword:     os.Getenv("DB_PASSWORD"),
 		DbPort:         os.Getenv("DB_PORT"),
 		DbUser:         os.Getenv("DB_USER"),
+		Environment:    os.Getenv("ENVIRONMENT"),
 		HttpListenAddr: os.Getenv("HTTP_LISTEN_ADDR"),
 		SubabaseSecret: os.Getenv("SUPABASE_SECRET"),
 		SupabaseUrl:    os.Getenv("SUPABASE_URL"),
@@ -39,10 +59,11 @@ func LoadEnvVars(log types.Logger) (*types.Config, error) {
 }
 
 // checkEnvVar checks if the environment variable is set and not empty.
-func checkEnvVar(log types.Logger, varName string) {
+func checkEnvVar(varName string) error {
 	if varValue, ok := os.LookupEnv(varName); !ok {
-		log.Error(varName + " variable not found")
+		return errors.New(varName + " variable not found")
 	} else if varValue == "" {
-		log.Error(varName + " variable found but empty")
+		return errors.New(varName + " variable found but empty")
 	}
+	return nil
 }

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"dreampicai/types"
-	"log/slog"
 	"net/http"
 
 	"github.com/a-h/templ"
@@ -26,10 +25,10 @@ func hxRedirect(w http.ResponseWriter, r *http.Request, to string) error {
 	return nil
 }
 
-func Make(h func(http.ResponseWriter, *http.Request) error) http.HandlerFunc {
+func Make(log types.Logger, h func(types.Logger, http.ResponseWriter, *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := h(w, r); err != nil {
-			slog.Error("internal server error", "err", err, "path", r.URL.Path)
+		if err := h(log, w, r); err != nil {
+			log.Error(r.Context(), "internal server error", "err", err, "path", r.URL.Path)
 		}
 	}
 }

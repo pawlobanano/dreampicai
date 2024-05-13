@@ -1,5 +1,7 @@
 package types
 
+import "context"
+
 // Config is a struct which encapsulates .env file variables.
 type Config struct {
 	DbHost         string
@@ -7,6 +9,7 @@ type Config struct {
 	DbPassword     string
 	DbPort         string
 	DbUser         string
+	Environment    string
 	HttpListenAddr string
 	SubabaseSecret string
 	SupabaseUrl    string
@@ -14,10 +17,10 @@ type Config struct {
 
 // Logger interface for logging.
 type Logger interface {
-	Debug(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
+	Debug(ctx context.Context, msg string, args ...any)
+	Info(ctx context.Context, msg string, args ...any)
+	Warn(ctx context.Context, msg string, args ...any)
+	Error(ctx context.Context, msg string, args ...any)
 }
 
 // User.

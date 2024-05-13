@@ -1,37 +1,50 @@
 package logger
 
 import (
+	"context"
 	"log/slog"
 	"os"
 )
 
-var programLevel = new(slog.LevelVar)
-
-// SlogLogger is a logger that uses slog.
-type SlogLogger struct{}
-
-// Debug logs a debug message with optional arguments.
-func (l *SlogLogger) Debug(msg string, args ...interface{}) {
-	slog.Debug(msg, args...)
+// Logger is a struct which encapsulates slog.Logger.
+type Logger struct {
+	logger slog.Logger
 }
 
-// Info logs an info message with optional arguments.
-func (l *SlogLogger) Info(msg string, args ...interface{}) {
-	slog.Info(msg, args...)
+// NewDebugJsonLogger creates a new logger with debug level and JSON format.
+func NewDebugJsonLogger() *Logger {
+	return &Logger{
+		logger: *slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug.Level(),
+		})),
+	}
 }
 
-// Warn logs a warning message with optional arguments.
-func (l *SlogLogger) Warn(msg string, args ...interface{}) {
-	slog.Warn(msg, args...)
+// NewInfoJsonLogger creates a new logger with info level and JSON format.
+func NewInfoJsonLogger() *Logger {
+	return &Logger{
+		logger: *slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo.Level(),
+		})),
+	}
 }
 
-// Error logs an error message with optional arguments.
-func (l *SlogLogger) Error(msg string, args ...interface{}) {
-	slog.Error(msg, args...)
+// Debug logs a DEBUG level message with context and optional arguments.
+func (l *Logger) Debug(ctx context.Context, msg string, args ...any) {
+	l.logger.DebugContext(ctx, msg, args...)
 }
 
-// InitSlogLogger creates a new slog logger.
-func InitSlogLogger() *slog.Logger {
-	programLevel.Set(slog.LevelDebug)
-	return slog.New(slog.NewJSONHandler(os.Stdout, nil))
+// Info logs an INFO level message with context and optional arguments.
+func (l *Logger) Info(ctx context.Context, msg string, args ...any) {
+	l.logger.InfoContext(ctx, msg, args...)
+}
+
+// Warn logs a WARN level message with context and optional arguments.
+func (l *Logger) Warn(ctx context.Context, msg string, args ...any) {
+	l.logger.WarnContext(ctx, msg, args...)
+}
+
+// Error logs an ERROR level message with context and optional arguments.
+func (l *Logger) Error(ctx context.Context, msg string, args ...any) {
+	l.logger.ErrorContext(ctx, msg, args...)
 }

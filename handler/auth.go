@@ -3,8 +3,8 @@ package handler
 import (
 	"dreampicai/pkg/sb"
 	"dreampicai/pkg/validate"
+	"dreampicai/types"
 	"dreampicai/view/auth"
-	"log/slog"
 	"net/http"
 
 	"github.com/nedpals/supabase-go"
@@ -12,22 +12,22 @@ import (
 
 const cookieName = "at"
 
-func HandleLoginIndex(w http.ResponseWriter, r *http.Request) error {
+func HandleLoginIndex(log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.Login())
 }
 
-func HandleSignupIndex(w http.ResponseWriter, r *http.Request) error {
+func HandleSignupIndex(log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.Signup())
 }
 
-func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
+func HandleLoginCreate(log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	credentials := supabase.UserCredentials{
 		Email:    r.FormValue("email"),
 		Password: r.FormValue("password"),
 	}
 	resp, err := sb.Client.Auth.SignIn(r.Context(), credentials)
 	if err != nil {
-		slog.Error("login error", "err", err)
+		log.Error(r.Context(), "login error", "err", err)
 		return render(w, r, auth.LoginForm(credentials, auth.LoginErrors{
 			InvalidCredentials: "The credentials you have entered are invalid",
 		}))
@@ -36,7 +36,7 @@ func HandleLoginCreate(w http.ResponseWriter, r *http.Request) error {
 	return hxRedirect(w, r, "/")
 }
 
-func HandleLogoutCreate(w http.ResponseWriter, r *http.Request) error {
+func HandleLogoutCreate(log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	cookie := http.Cookie{
 		Name:     cookieName,
 		Value:    "",
@@ -50,7 +50,7 @@ func HandleLogoutCreate(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func HandleLoginWithGoogle(w http.ResponseWriter, r *http.Request) error {
+func HandleLoginWithGoogle(log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	resp, err := sb.Client.Auth.SignInWithProvider(supabase.ProviderSignInOptions{
 		Provider:   "google",
 		RedirectTo: "http://localhost:3000/auth/callback",
@@ -62,7 +62,7 @@ func HandleLoginWithGoogle(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func HandleSignupCreate(w http.ResponseWriter, r *http.Request) error {
+func HandleSignupCreate(log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	params := auth.SignupParams{
 		Email:           r.FormValue("email"),
 		Password:        r.FormValue("password"),
@@ -89,10 +89,12 @@ func HandleSignupCreate(w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.SignupSuccess(user.Email))
 }
 
-func HandleAuthCallback(w http.ResponseWriter, r *http.Request) error {
+func HandleAuthCallback(log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	accessToken := r.URL.Query().Get("access_token")
 	if len(accessToken) == 0 {
-		render(w, r, auth.CallbackScript())
+		if err := render(w, r, auth.CallbackScript()); err != nil {
+			return err
+		}
 	}
 	setAuthCookie(w, accessToken)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
