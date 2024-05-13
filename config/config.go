@@ -2,14 +2,13 @@ package config
 
 import (
 	"dreampicai/types"
-	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-// LoadConfig loads the configuration from the .env file.
-func LoadConfig(log slog.Logger) (*types.Config, error) {
+// LoadEnvVars loads the configuration from the .env file and returns a Config and error.
+func LoadEnvVars(log types.Logger) (*types.Config, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Error("Loading .env file", err)
@@ -39,7 +38,8 @@ func LoadConfig(log slog.Logger) (*types.Config, error) {
 	return config, nil
 }
 
-func checkEnvVar(log slog.Logger, varName string) {
+// checkEnvVar checks if the environment variable is set and not empty.
+func checkEnvVar(log types.Logger, varName string) {
 	if varValue, ok := os.LookupEnv(varName); !ok {
 		log.Error(varName + " variable not found")
 	} else if varValue == "" {

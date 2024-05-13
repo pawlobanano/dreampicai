@@ -2,31 +2,30 @@ package main
 
 import (
 	"embed"
-	"log/slog"
 	"net/http"
 	"os"
 
 	"dreampicai/config"
 	"dreampicai/handler"
+	"dreampicai/pkg/logger"
 	"dreampicai/pkg/sb"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/joho/godotenv"
 )
 
 //go:embed public
 var FS embed.FS
 
-var log = *slog.New(slog.NewJSONHandler(os.Stdout, nil))
-
 func main() {
-	config, err := config.LoadConfig(log)
+	log := logger.InitSlogLogger()
+
+	config, err := config.LoadEnvVars(log)
 	if err != nil {
 		log.Error("Loading config failed.", err)
 		os.Exit(1)
 	}
 
-	if err := initEverything(); err != nil {
+	if err := sb.InitSupabaseClient(); err != nil {
 		log.Error(err.Error())
 	}
 
@@ -53,12 +52,4 @@ func main() {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
-}
-
-func initEverything() error {
-	if err := godotenv.Load(); err != nil {
-		return err
-	}
-
-	return sb.Init()
 }
