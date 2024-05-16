@@ -6,16 +6,16 @@ build:
 	go build -tags develop -o bin/$(PROJECT_NAME) main.go
 
 create-local-container-network:
-	podman network create $(PROJECT_NAME)_local_container_network
+	docker network create $(PROJECT_NAME)_local_container_network
 
 create-local-container-postgresql:
-	podman run --name $(PROJECT_NAME)_local_container_postgresql --network $(PROJECT_NAME)_local_container_network --mount type=volume,source=$(PROJECT_NAME)_local_container_postgresql_database_volume,target=/var/lib/postgresql/data -p 5432:5432 -e POSTGRES_USER=$(PROJECT_NAME)_local_container_postgresql_database_username -e POSTGRES_PASSWORD=$(PROJECT_NAME)_local_container_postgresql_database_password -d postgres:16.3-alpine3.19
+	docker run --name $(PROJECT_NAME)_local_container_postgresql --network $(PROJECT_NAME)_local_container_network --mount type=volume,source=$(PROJECT_NAME)_local_container_postgresql_database_volume,target=/var/lib/postgresql/data -p 5432:5432 -e POSTGRES_USER=$(PROJECT_NAME)_local_container_postgresql_database_username -e POSTGRES_PASSWORD=$(PROJECT_NAME)_local_container_postgresql_database_password -d postgres:16.3-alpine3.19
 
 create-local-container-postgresql-database:
-	podman exec -it $(PROJECT_NAME)_local_container_postgresql createdb --username=$(PROJECT_NAME)_local_container_postgresql_database_username --owner=$(PROJECT_NAME)_local_container_postgresql_database_username $(PROJECT_NAME)_local_container_postgresql_database
+	docker exec -it $(PROJECT_NAME)_local_container_postgresql createdb --username=$(PROJECT_NAME)_local_container_postgresql_database_username --owner=$(PROJECT_NAME)_local_container_postgresql_database_username $(PROJECT_NAME)_local_container_postgresql_database
 
 drop-local-postgresql-database:
-	podman exec -it $(PROJECT_NAME)_local_container_postgresql dropdb --username=$(PROJECT_NAME)_local_container_postgresql_database_username $(PROJECT_NAME)_local_container_postgresql_database
+	docker exec -it $(PROJECT_NAME)_local_container_postgresql dropdb --username=$(PROJECT_NAME)_local_container_postgresql_database_username $(PROJECT_NAME)_local_container_postgresql_database
 
 install:
 	go install github.com/a-h/templ/cmd/templ@latest
