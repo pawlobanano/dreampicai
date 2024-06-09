@@ -1,17 +1,18 @@
 package sb
 
 import (
-	"os"
+	"dreampicai/types"
 
 	"github.com/nedpals/supabase-go"
 )
 
 var Client *supabase.Client
 
-func InitSupabaseClient() error {
-	sbUrl := os.Getenv("SUPABASE_URL")
-	sbSecret := os.Getenv("SUPABASE_SECRET")
-	Client = supabase.CreateClient(sbUrl, sbSecret)
+func InitSupabaseClient(s types.Server) error {
+	Client = supabase.CreateClient(
+		s.Config.SupabaseUrl,
+		s.Config.SupabaseSecret,
+	)
 
 	return nil
 }

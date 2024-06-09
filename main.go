@@ -10,6 +10,7 @@ import (
 	"dreampicai/handler"
 	"dreampicai/pkg/logger"
 	"dreampicai/pkg/sb"
+	"dreampicai/types"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -27,39 +28,44 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(cfg.Environment) == 0 {
+	s := types.Server{
+		Config: cfg,
+		Logger: log,
+	}
+
+	if len(s.Config.Environment) == 0 {
 		os.Exit(1)
 	}
 
-	if cfg.Environment == "development" {
-		log = logger.NewDebugJsonSlogLogger()
+	if s.Config.Environment == "development" {
+		s.Logger = logger.NewDebugJsonSlogLogger()
 	}
 
-	if err := sb.InitSupabaseClient(); err != nil {
-		log.Error(ctx, err.Error())
+	if err := sb.InitSupabaseClient(s); err != nil {
+		s.Logger.Error(ctx, err.Error())
 	}
 
 	router := chi.NewMux()
-	router.Use(handler.WithLogger(log), handler.WithUser)
+	router.Use(handler.WithLogger(s), handler.WithUser(s))
 	router.Handle("/*", http.StripPrefix("/", http.FileServer(http.FS(FS))))
-	router.Get("/", handler.Make(cfg, log, handler.HandleHomeIndex))
-	router.Get("/login", handler.Make(cfg, log, handler.HandleLoginIndex))
-	router.Get("/login/provider/google", handler.Make(cfg, log, handler.HandleLoginWithGoogle))
-	router.Post("/login", handler.Make(cfg, log, handler.HandleLoginCreate))
-	router.Post("/logout", handler.Make(cfg, log, handler.HandleLogoutCreate))
-	router.Get("/signup", handler.Make(cfg, log, handler.HandleSignupIndex))
-	router.Post("/signup", handler.Make(cfg, log, handler.HandleSignupCreate))
-	router.Get("/auth/callback", handler.Make(cfg, log, handler.HandleAuthCallback))
+	router.Get("/", handler.Make(s, handler.HandleHomeIndex))
+	router.Get("/login", handler.Make(s, handler.HandleLoginIndex))
+	router.Get("/login/provider/google", handler.Make(s, handler.HandleLoginWithGoogle))
+	router.Post("/login", handler.Make(s, func(w http.ResponseWriter, r *http.Request) error { return handler.HandleLoginCreate(s, w, r) }))
+	router.Post("/logout", handler.Make(s, func(w http.ResponseWriter, r *http.Request) error { return handler.HandleLogoutCreate(s, w, r) }))
+	router.Get("/signup", handler.Make(s, handler.HandleSignupIndex))
+	router.Post("/signup", handler.Make(s, handler.HandleSignupCreate))
+	router.Get("/auth/callback", handler.Make(s, func(w http.ResponseWriter, r *http.Request) error { return handler.HandleAuthCallback(s, w, r) }))
 
 	router.Group(func(auth chi.Router) {
 		auth.Use(handler.WithAuth)
-		auth.Get("/settings", handler.Make(cfg, log, handler.HandleSettingsIndex))
+		auth.Get("/settings", handler.Make(s, handler.HandleSettingsIndex))
 	})
 
-	log.Info(ctx, "application running on address", "address", cfg.HttpListenAddr)
-	err = http.ListenAndServe(cfg.HttpListenAddr, router)
+	s.Logger.Info(ctx, "application running on address", "address", s.Config.HttpListenAddr)
+	err = http.ListenAndServe(s.Config.HttpListenAddr, router)
 	if err != nil {
-		log.Error(ctx, "fatal server error", "err", err)
+		s.Logger.Error(ctx, "fatal server error", "err", err)
 		os.Exit(1)
 	}
 }

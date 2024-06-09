@@ -25,10 +25,10 @@ func hxRedirect(w http.ResponseWriter, r *http.Request, to string) error {
 	return nil
 }
 
-func Make(cfg types.Config, log types.Logger, h func(types.Config, types.Logger, http.ResponseWriter, *http.Request) error) http.HandlerFunc {
+func Make(s types.Server, h func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := h(cfg, log, w, r); err != nil {
-			log.Error(r.Context(), "internal server error", "err", err, "path", r.URL.Path)
+		if err := h(w, r); err != nil {
+			s.Logger.Error(r.Context(), "internal server error", "err", err, "path", r.URL.Path)
 		}
 	}
 }

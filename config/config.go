@@ -36,7 +36,13 @@ func LoadEnvVars() (types.Config, error) {
 	if err := checkEnvVar("HTTP_LISTEN_ADDR"); err != nil {
 		return types.Config{}, err
 	}
+	if err := checkEnvVar("SESSION_ACCESS_TOKEN_KEY"); err != nil {
+		return types.Config{}, err
+	}
 	if err := checkEnvVar("SESSION_SECRET"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("SESSION_USER_KEY"); err != nil {
 		return types.Config{}, err
 	}
 	if err := checkEnvVar("SUPABASE_SECRET"); err != nil {
@@ -47,16 +53,18 @@ func LoadEnvVars() (types.Config, error) {
 	}
 
 	config := types.Config{
-		DbHost:         os.Getenv("DB_HOST"),
-		DbName:         os.Getenv("DB_NAME"),
-		DbPassword:     os.Getenv("DB_PASSWORD"),
-		DbPort:         os.Getenv("DB_PORT"),
-		DbUser:         os.Getenv("DB_USER"),
-		Environment:    os.Getenv("ENVIRONMENT"),
-		HttpListenAddr: os.Getenv("HTTP_LISTEN_ADDR"),
-		SessionSecret:  os.Getenv("SESSION_SECRET"),
-		SupabaseSecret: os.Getenv("SUPABASE_SECRET"),
-		SupabaseUrl:    os.Getenv("SUPABASE_URL"),
+		DbHost:                os.Getenv("DB_HOST"),
+		DbName:                os.Getenv("DB_NAME"),
+		DbPassword:            os.Getenv("DB_PASSWORD"),
+		DbPort:                os.Getenv("DB_PORT"),
+		DbUser:                os.Getenv("DB_USER"),
+		Environment:           os.Getenv("ENVIRONMENT"),
+		HttpListenAddr:        os.Getenv("HTTP_LISTEN_ADDR"),
+		SessionAccessTokenKey: os.Getenv("SESSION_ACCESS_TOKEN_KEY"),
+		SessionSecret:         os.Getenv("SESSION_SECRET"),
+		SessionUserKey:        os.Getenv("SESSION_USER_KEY"),
+		SupabaseSecret:        os.Getenv("SUPABASE_SECRET"),
+		SupabaseUrl:           os.Getenv("SUPABASE_URL"),
 	}
 
 	return config, nil
