@@ -6,6 +6,8 @@ import (
 	"dreampicai/types"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/sessions"
 )
 
 func WithAuth(next http.Handler) http.Handler {
@@ -16,7 +18,6 @@ func WithAuth(next http.Handler) http.Handler {
 		}
 		user := getAuthenticatedUser(r)
 		if !user.IsLoggedIn {
-			// TODO add redirect to previously requested path
 			path := r.URL.Path
 			http.Redirect(w, r, "/login?to="+path, http.StatusSeeOther)
 			return
@@ -26,18 +27,34 @@ func WithAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+func WithLogger(logger types.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), types.ContextKey("logger"), logger)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
 func WithUser(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.URL.Path, "/public") {
 			next.ServeHTTP(w, r)
 			return
 		}
-		cookie, err := r.Cookie(cookieName)
+		// TODO get secret from env vars - find a way to pass config var to middleware
+		store := sessions.NewCookieStore([]byte("secret"))
+		session, err := store.Get(r, sessionUserKey)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
-		resp, err := sb.Client.Auth.User(r.Context(), cookie.Value)
+		accessToken := session.Values[sessionAccessTokenKey]
+		if accessToken == nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+		resp, err := sb.Client.Auth.User(r.Context(), accessToken.(string))
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return

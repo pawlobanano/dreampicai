@@ -36,6 +36,9 @@ func LoadEnvVars() (types.Config, error) {
 	if err := checkEnvVar("HTTP_LISTEN_ADDR"); err != nil {
 		return types.Config{}, err
 	}
+	if err := checkEnvVar("SESSION_SECRET"); err != nil {
+		return types.Config{}, err
+	}
 	if err := checkEnvVar("SUPABASE_SECRET"); err != nil {
 		return types.Config{}, err
 	}
@@ -51,7 +54,8 @@ func LoadEnvVars() (types.Config, error) {
 		DbUser:         os.Getenv("DB_USER"),
 		Environment:    os.Getenv("ENVIRONMENT"),
 		HttpListenAddr: os.Getenv("HTTP_LISTEN_ADDR"),
-		SubabaseSecret: os.Getenv("SUPABASE_SECRET"),
+		SessionSecret:  os.Getenv("SESSION_SECRET"),
+		SupabaseSecret: os.Getenv("SUPABASE_SECRET"),
 		SupabaseUrl:    os.Getenv("SUPABASE_URL"),
 	}
 

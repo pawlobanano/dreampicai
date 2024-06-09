@@ -1918,6 +1918,10 @@ html {
   margin-top: calc(100vh - 100vh + 8rem);
 }
 
+.block {
+  display: block;
+}
+
 .inline {
   display: inline;
 }

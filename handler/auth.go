@@ -7,20 +7,24 @@ import (
 	"dreampicai/view/auth"
 	"net/http"
 
+	"github.com/gorilla/sessions"
 	"github.com/nedpals/supabase-go"
 )
 
-const cookieName = "at"
+const (
+	sessionAccessTokenKey = "accessToken"
+	sessionUserKey        = "user"
+)
 
-func HandleLoginIndex(log types.Logger, w http.ResponseWriter, r *http.Request) error {
+func HandleLoginIndex(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.Login())
 }
 
-func HandleSignupIndex(log types.Logger, w http.ResponseWriter, r *http.Request) error {
+func HandleSignupIndex(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	return render(w, r, auth.Signup())
 }
 
-func HandleLoginCreate(log types.Logger, w http.ResponseWriter, r *http.Request) error {
+func HandleLoginCreate(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	credentials := supabase.UserCredentials{
 		Email:    r.FormValue("email"),
 		Password: r.FormValue("password"),
@@ -32,25 +36,25 @@ func HandleLoginCreate(log types.Logger, w http.ResponseWriter, r *http.Request)
 			InvalidCredentials: "The credentials you have entered are invalid",
 		}))
 	}
-	setAuthCookie(w, resp.AccessToken)
+	if err := setAuthSession(cfg, w, r, resp.AccessToken); err != nil {
+		return err
+	}
 	return hxRedirect(w, r, "/")
 }
 
-func HandleLogoutCreate(log types.Logger, w http.ResponseWriter, r *http.Request) error {
-	cookie := http.Cookie{
-		Name:     cookieName,
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		Secure:   true,
-		HttpOnly: true,
+func HandleLogoutCreate(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
+	store := sessions.NewCookieStore([]byte(cfg.SessionSecret))
+	session, err := store.Get(r, sessionUserKey)
+	if err != nil {
+		return err
 	}
-	http.SetCookie(w, &cookie)
+	session.Values[sessionAccessTokenKey] = ""
+	session.Save(r, w)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 	return nil
 }
 
-func HandleLoginWithGoogle(log types.Logger, w http.ResponseWriter, r *http.Request) error {
+func HandleLoginWithGoogle(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	resp, err := sb.Client.Auth.SignInWithProvider(supabase.ProviderSignInOptions{
 		Provider:   "google",
 		RedirectTo: "http://localhost:3000/auth/callback",
@@ -62,7 +66,7 @@ func HandleLoginWithGoogle(log types.Logger, w http.ResponseWriter, r *http.Requ
 	return nil
 }
 
-func HandleSignupCreate(log types.Logger, w http.ResponseWriter, r *http.Request) error {
+func HandleSignupCreate(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	params := auth.SignupParams{
 		Email:           r.FormValue("email"),
 		Password:        r.FormValue("password"),
@@ -89,25 +93,24 @@ func HandleSignupCreate(log types.Logger, w http.ResponseWriter, r *http.Request
 	return render(w, r, auth.SignupSuccess(user.Email))
 }
 
-func HandleAuthCallback(log types.Logger, w http.ResponseWriter, r *http.Request) error {
+func HandleAuthCallback(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	accessToken := r.URL.Query().Get("access_token")
 	if len(accessToken) == 0 {
-		if err := render(w, r, auth.CallbackScript()); err != nil {
-			return err
-		}
+		return render(w, r, auth.CallbackScript())
 	}
-	setAuthCookie(w, accessToken)
+	if err := setAuthSession(cfg, w, r, accessToken); err != nil {
+		return err
+	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return nil
 }
 
-func setAuthCookie(w http.ResponseWriter, accessToken string) {
-	cookie := &http.Cookie{
-		Name:     cookieName,
-		Value:    accessToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
+func setAuthSession(cfg types.Config, w http.ResponseWriter, r *http.Request, accessToken string) error {
+	store := sessions.NewCookieStore([]byte(cfg.SessionSecret))
+	session, err := store.Get(r, sessionUserKey)
+	if err != nil {
+		return err
 	}
-	http.SetCookie(w, cookie)
+	session.Values[sessionAccessTokenKey] = accessToken
+	return session.Save(r, w)
 }

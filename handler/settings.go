@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func HandleSettingsIndex(log types.Logger, w http.ResponseWriter, r *http.Request) error {
+func HandleSettingsIndex(cfg types.Config, log types.Logger, w http.ResponseWriter, r *http.Request) error {
 	user := getAuthenticatedUser(r)
 	return render(w, r, settings.Index(user))
 }

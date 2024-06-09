@@ -11,9 +11,13 @@ type Config struct {
 	DbUser         string
 	Environment    string
 	HttpListenAddr string
-	SubabaseSecret string
+	SessionSecret  string
+	SupabaseSecret string
 	SupabaseUrl    string
 }
+
+// contextKey is a custom type for context key.
+type ContextKey string
 
 // Logger interface for logging.
 type Logger interface {
@@ -21,14 +25,4 @@ type Logger interface {
 	Info(ctx context.Context, msg string, args ...any)
 	Warn(ctx context.Context, msg string, args ...any)
 	Error(ctx context.Context, msg string, args ...any)
-}
-
-// User.
-type userKey string
-
-const UserContextKey userKey = "user"
-
-type AuthenticatedUser struct {
-	Email      string
-	IsLoggedIn bool
 }
