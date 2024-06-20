@@ -28,14 +28,6 @@ Web application for avatar image generation with the use of generative artificia
     ```zsh
     make create-local-container-postgresql-database
     ```
-- Run database migration down all versions
-    ```zsh
-    make migrate-down
-    ```
-- Run database migration down 1 version
-    ```zsh
-    make migrate-down-1
-    ```
 - Run database migration up all versions
     ```zsh
     make migrate-up
@@ -44,19 +36,27 @@ Web application for avatar image generation with the use of generative artificia
     ```zsh
     make migrate-up-1
     ```
+- Run database migration down all versions
+    ```zsh
+    make migrate-down
+    ```
+- Run database migration down 1 version
+    ```zsh
+    make migrate-down-1
+    ```
 - Drop database
     ```zsh
     make drop-local-postgresql-database
     ```
 
 ### Code generation
-- Generate golang code for SQL queries
-    ```zsh
-    make sqlc
-    ```
 - Create a new database migration
     ```zsh
     migrate create -ext sql -dir db/migration -seq <migration_name>
+    ```
+- Generate golang code for SQL queries
+    ```zsh
+    make sqlc
     ```
 
 ### Application run

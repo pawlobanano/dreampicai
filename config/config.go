@@ -27,6 +27,9 @@ func LoadEnvVars() (types.Config, error) {
 	if err := checkEnvVar("DB_PORT"); err != nil {
 		return types.Config{}, err
 	}
+	if err := checkEnvVar("DB_SOURCE"); err != nil {
+		return types.Config{}, err
+	}
 	if err := checkEnvVar("DB_USER"); err != nil {
 		return types.Config{}, err
 	}
@@ -34,6 +37,9 @@ func LoadEnvVars() (types.Config, error) {
 		return types.Config{}, err
 	}
 	if err := checkEnvVar("HTTP_LISTEN_ADDR"); err != nil {
+		return types.Config{}, err
+	}
+	if err := checkEnvVar("MIGRATION_URL"); err != nil {
 		return types.Config{}, err
 	}
 	if err := checkEnvVar("SESSION_ACCESS_TOKEN_KEY"); err != nil {
@@ -57,9 +63,11 @@ func LoadEnvVars() (types.Config, error) {
 		DbName:                os.Getenv("DB_NAME"),
 		DbPassword:            os.Getenv("DB_PASSWORD"),
 		DbPort:                os.Getenv("DB_PORT"),
+		DbSource:              os.Getenv("DB_SOURCE"),
 		DbUser:                os.Getenv("DB_USER"),
 		Environment:           os.Getenv("ENVIRONMENT"),
 		HttpListenAddr:        os.Getenv("HTTP_LISTEN_ADDR"),
+		MigrationURL:          os.Getenv("MIGRATION_URL"),
 		SessionAccessTokenKey: os.Getenv("SESSION_ACCESS_TOKEN_KEY"),
 		SessionSecret:         os.Getenv("SESSION_SECRET"),
 		SessionUserKey:        os.Getenv("SESSION_USER_KEY"),

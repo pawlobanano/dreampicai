@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"net/http"
 	"os"
 
@@ -13,6 +14,9 @@ import (
 	"dreampicai/types"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 //go:embed public
@@ -45,6 +49,8 @@ func main() {
 		s.Logger.Error(ctx, err.Error())
 	}
 
+	runDbMigration(ctx, s.Logger, s.Config.MigrationURL, s.Config.DbSource)
+
 	router := chi.NewMux()
 	router.Use(handler.WithLogger(s), handler.WithUser(s))
 	router.Handle("/*", http.StripPrefix("/", http.FileServer(http.FS(FS))))
@@ -67,5 +73,20 @@ func main() {
 	if err != nil {
 		s.Logger.Error(ctx, "fatal server error", "err", err)
 		os.Exit(1)
+	}
+}
+
+func runDbMigration(ctx context.Context, log types.Logger, migrationUrl string, dbSource string) {
+	migration, err := migrate.New(migrationUrl, dbSource)
+	if err != nil {
+		log.Error(ctx, "cannot create new migrate instance", "err", err)
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Error(ctx, "failed to run migrate up", "err", err)
+	} else if errors.Is(err, migrate.ErrNoChange) {
+		log.Info(ctx, "no change in db migration")
+	} else {
+		log.Info(ctx, "db migrated successfully")
 	}
 }

@@ -16,9 +16,11 @@ type Config struct {
 	DbName                string
 	DbPassword            string
 	DbPort                string
+	DbSource              string
 	DbUser                string
 	Environment           string
 	HttpListenAddr        string
+	MigrationURL          string
 	SessionAccessTokenKey string
 	SessionSecret         string
 	SessionUserKey        string

@@ -44,7 +44,10 @@ func HandleLogoutCreate(s types.Server, w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 	session.Values[s.Config.SessionAccessTokenKey] = ""
-	session.Save(r, w)
+	err = session.Save(r, w)
+	if err != nil {
+		return err
+	}
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 	return nil
 }
