@@ -6,6 +6,10 @@ Web application for avatar image generation with the use of generative artificia
 - [Docker](https://www.docker.com)
 - [Golang](https://golang.org)
 - [Homebrew](https://brew.sh)
+- [Go linters runner](https://golangci-lint.run/welcome/install/#local-installation)
+    ```zsh
+    brew install golangci-lint
+    ```
 - [Migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
     ```zsh
     brew install golang-migrate
@@ -27,6 +31,10 @@ Web application for avatar image generation with the use of generative artificia
 - Create PosgtreSQL database
     ```zsh
     make create-local-container-postgresql-database
+    ```
+- Install dependencies
+    ```zsh
+    make install
     ```
 - Run database migration up all versions
     ```zsh
@@ -64,4 +72,9 @@ Web application for avatar image generation with the use of generative artificia
     ```zsh
     make run
     ```
-    
+
+### Application development tools
+- Run Go linters
+    ```zsh
+    make linters
+    ```

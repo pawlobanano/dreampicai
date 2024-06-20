@@ -25,7 +25,7 @@ install:
 	go mod download
 	npm install -D daisyui@latest
 
-lint:
+linters:
 	golangci-lint run ./...
 
 migrate-down:
@@ -43,4 +43,4 @@ migrate-up-1:
 run: build
 	./bin/$(PROJECT_NAME)
 
-.PHONY: build create-local-container-network create-local-container-postgresql create-local-container-postgresql-database drop-local-postgresql-database install lint migrate-down migrate-down-1 migrate-up migrate-up-1 run
+.PHONY: build create-local-container-network create-local-container-postgresql create-local-container-postgresql-database drop-local-postgresql-database install linters migrate-down migrate-down-1 migrate-up migrate-up-1 run
